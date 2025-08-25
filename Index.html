@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Darkfall — RPG/Survival/Action (PWA)</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0b0e12" />
+  <style>
+    html, body { height: 100%; margin: 0; background:#0b0e12; color:#e6e6ea; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial; }
+    #ui { position: fixed; inset: 0 0 auto 0; display:flex; gap:.5rem; align-items:center; padding:.5rem .75rem; background:linear-gradient(180deg, rgba(11,14,18,.9), rgba(11,14,18,.55)); border-bottom:1px solid #1a1f29; z-index:5 }
+    #log { position: fixed; bottom: 0; left: 0; right: 0; max-height: 28vh; overflow:auto; font-size:.9rem; padding:.5rem .75rem; background:linear-gradient(0deg, rgba(11,14,18,.9), rgba(11,14,18,.55)); border-top:1px solid #1a1f29; }
+    #gameWrap { display: grid; grid-template-columns: 1fr 340px; gap: 8px; height: calc(100% - 84px); margin-top: 44px; }
+    #right { border-left: 1px solid #1a1f29; padding: 8px; overflow:auto; }
+    #canvas { width: 100%; height: 100%; background:#0f141b; display:block; touch-action: none; }
+    .btn { background:#1c2330; border:1px solid #2a3445; padding:.45rem .6rem; color:#eaeaf2; border-radius:10px; cursor:pointer; }
+    .btn:hover { background:#222b3a; }
+    .row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+    select, input[type="number"], input[type="text"] { background:#0f141b; color:#dfe3ea; border:1px solid #2a3445; border-radius:8px; padding:.35rem .5rem; }
+    fieldset { border:1px solid #2a3445; border-radius:12px; margin:6px 0; }
+    legend { padding: 0 .4rem; color:#9bb1d6; }
+    .bar { height: 10px; border:1px solid #2a3445; border-radius: 999px; overflow:hidden; background:#10151d; }
+    .bar > i { display:block; height:100%; background:linear-gradient(90deg,#79ffa8,#42b983,#2bb4d6); }
+    .pill { border:1px solid #2a3445; border-radius:999px; padding:.1rem .5rem; font-size:.8rem; opacity:.9; }
+    .sectionTitle { font-weight:700; margin-top:8px; color:#a6b8dc; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono"; font-size:.85rem; background:#0b0e12; border:1px solid #2a3445; padding:.1rem .35rem; border-radius:6px; }
+    a { color:#9bd0ff }
+    #hud { position: fixed; inset: auto 0 52px 0; display:flex; justify-content:space-between; padding: 8px; pointer-events:none; z-index:6; }
+    .pad { pointer-events:auto; background:#0f141bcc; border:1px solid #2a3445; border-radius:16px; padding:8px; display:grid; grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(3, 54px); gap:6px; }
+    .pad button, .act button { width:54px; height:54px; border-radius:14px; background:#1c2330; border:1px solid #2a3445; color:#eaeaf2; font-weight:700; }
+    .act { pointer-events:auto; display:flex; gap:8px; align-items:flex-end; }
+    @media (max-width: 980px) {
+      #gameWrap { grid-template-columns: 1fr; }
+      #right { border-left:none; border-top:1px solid #1a1f29; height: 52vh; }
+      #hud { inset: auto 0 56px 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="ui" class="row">
+    <button class="btn" id="newGameBtn">New Game</button>
+    <button class="btn" id="saveBtn">Save</button>
+    <button class="btn" id="loadBtn">Load</button>
+    <span class="pill" id="timeLabel">Day 1 — Dawn</span>
+    <span class="pill" id="locLabel">Wildergrim</span>
+    <span class="pill" id="coinsLabel">0z</span>
+    <span class="pill" id="xpLabel">Lvl 1 • 0/100 XP</span>
+    <span class="pill" id="hpLabel">HP 100/100</span>
+    <div style="margin-left:auto" class="row">
+      <span>Controls: <span class="kbd">WASD/Pad</span> move • <span class="kbd">Space/⚔</span> attack • <span class="kbd">Q/E/R</span> skills • <span class="kbd">Esc</span> pause</span>
+    </div>
+  </div>
+  <div id="gameWrap">
+    <canvas id="canvas" width="1024" height="640"></canvas>
+    <aside id="right">
+      <div id="paneChar"></div>
+      <div id="paneQuests" style="margin-top:8px"></div>
+      <div id="paneHouses" style="margin-top:8px"></div>
+      <div id="paneInv" style="margin-top:8px"></div>
+      <div id="paneCraft" style="margin-top:8px"></div>
+      <div id="paneVillage" style="margin-top:8px"></div>
+    </aside>
+  </div>
+  <div id="hud">
+    <div class="pad">
+      <span></span><button id="up">↑</button><span></span>
+      <button id="left">←</button><button id="attack">⚔</button><button id="right">→</button>
+      <span></span><button id="down">↓</button><span></span>
+    </div>
+    <div class="act">
+      <button id="qbtn">Q</button>
+      <button id="ebtn">E</button>
+      <button id="rbtn">R</button>
+    </div>
+  </div>
+  <div id="log"></div>
+
+  <script>
+/* Darkfall RPG — full prototype (mobile-ready PWA)
+   Systems: classes (incl. Bloodmage), skill trees, leveling, procedural quests,
+   dungeons & boss, 5-tier currency, villages/housing/land, crafting, saving/loading,
+   mobile touch controls. */
+
+(function(){
+  const cvs = document.getElementById('canvas');
+  const ctx = cvs.getContext('2d', { alpha:false });
+  const logEl = document.getElementById('log');
+  const paneChar = document.getElementById('paneChar');
+  const paneQuests = document.getElementById('paneQuests');
+  const paneHouses = document.getElementById('paneHouses');
+  const paneInv = document.getElementById('paneInv');
+  const paneCraft = document.getElementById('paneCraft');
+  const paneVillage = document.getElementById('paneVillage');
+  const timeLabel = document.getElementById('timeLabel');
+  const xpLabel = document.getElementById('xpLabel');
+  const hpLabel = document.getElementById('hpLabel');
+  const coinsLabel = document.getElementById('coinsLabel');
+  const locLabel = document.getElementById('locLabel');
+
+  const upBtn = document.getElementById('up');
+  const downBtn = document.getElementById('down');
+  const leftBtn = document.getElementById('left');
+  const rightBtn = document.getElementById('right');
+  const atkBtn = document.getElementById('attack');
+  const qBtn = document.getElementById('qbtn');
+  const eBtn = document.getElementById('ebtn');
+  const rBtn = document.getElementById('rbtn');
+
+  const rand=(a,b)=>Math.random()*(b-a)+a;
+  const randi=(a,b)=>Math.floor(rand(a,b+1));
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+  const COIN = { Z:{name:'Zinc',sym:'z',rate:1}, C:{name:'Copper',sym:'c',rate:5}, S:{name:'Silver',sym:'s',rate:25}, G:{name:'Gold',sym:'g',rate:125}, P:{name:'Platinum',sym:'p',rate:625} };
+  const coinsToZinc = (c)=> (c.Z||0) + 5*(c.C||0) + 25*(c.S||0) + 125*(c.G||0) + 625*(c.P||0);
+  function zincToBest(z){ let P=Math.floor(z/625); z%=625; let G=Math.floor(z/125); z%=125; let S=Math.floor(z/25); z%=25; let C=Math.floor(z/5); z%=5; let Z=z; return {Z,C,S,G,P}; }
+  const fmtCoins = (c)=>['P','G','S','C','Z'].map(k=>c[k]?c[k]+COIN[k].sym:'').filter(Boolean).join(' ') || '0z';
+
+  const SPECIES = ['Human','Demon','Spirit (NPC)','Half-Demon','Elf — Dark','Elf — Snow','Elf — Mountain','Elf — Forest','Vampire','Lycan','Lich','Shade','Fae (Gloom)'];
+
+  const CLASSES = {
+    Warrior:{ base:{hp:130, atk:12, spd:2.4}, skills:[{id:'whirl',name:'Whirlwind',key:'Q',desc:'Spin attack.'},{id:'guard',name:'Guard',key:'E',desc:'Damage resist.'},{id:'leap',name:'Leap',key:'R',desc:'Jump slam.'}]},
+    Ranger:{ base:{hp:100, atk:10, spd:2.8}, skills:[{id:'roll',name:'Dodge Roll',key:'Q',desc:'Evade.'},{id:'mark',name:"Hunter's Mark",key:'E',desc:'Crit up.'},{id:'volley',name:'Arrow Volley',key:'R',desc:'AOE arrows.'}]},
+    Bloodmage:{ base:{hp:110, atk:10, spd:2.5}, skills:[{id:'hemovoid',name:'Hemovoid',key:'Q',desc:'Drain life in 30ft radius.'},{id:'bloodsurge',name:'Blood Surge',key:'E',desc:'ATK & rare drop up.'},{id:'sanguineWall',name:'Sanguine Wall',key:'R',desc:'Shield consuming HP.'}], passive:(p)=>{ p.atk*=1.15; p.rareFind+=0.15; }}
+  };
+
+  const WORLD = {
+    zones:[ {id:'wilds',name:'Wildergrim',level:1,color:'#0e1823'},
+            {id:'moor',name:'Bleakmoor',level:4,color:'#10131b'},
+            {id:'crypt',name:'Ash Crypts (Dungeon)',level:6,color:'#171117',dungeon:true,bosses:[{id:'ashenWarden',name:'Ashen Warden',hp:400,atk:18,uniq:'Summons bone cages'}]},
+            {id:'glow',name:'Fungal Gloam',level:3,color:'#111b16'} ],
+    villages:[ {id:'v1',name:'Thornwatch',house:{priceZ:500,luxury:1}},
+               {id:'v2',name:'Gravehollow',house:{priceC:60,luxury:2}},
+               {id:'v3',name:'Moonfen',house:{priceS:40,luxury:3}},
+               {id:'v4',name:'Ebonreach',house:{priceG:200,luxury:4}},
+               {id:'v5',name:'Kingsfall',house:{priceG:2000,luxury:5}} ]
+  };
+
+  const priceToZinc = (p)=> coinsToZinc({Z:0,C:0,S:0,G:0,P:0,...p});
+
+  const State = { paused:false, time:{day:1,tick:0}, zone:WORLD.zones[0], entities:[], pickups:[], projectiles:[], villages:JSON.parse(JSON.stringify(WORLD.villages)), player:null, quests:{main:[],side:[],proc:[]}, inventory:{coins:{Z:0,C:0,S:0,G:0,P:0}, items:[]}, housesOwned:[] };
+
+  const log=(m)=>{ const p=document.createElement('div'); p.textContent='» '+m; logEl.prepend(p); };
+
+  function newPlayer(){
+    let name=prompt('Name your character:','Ardent'); if(!name) name='Ardent';
+    let sp=prompt('Choose species:\n'+SPECIES.map((s,i)=>`${i+1}. ${s}`).join('\n'),'1');
+    sp=SPECIES[Math.max(0,Math.min(SPECIES.length-1,parseInt(sp)-1))];
+    const clsNames=Object.keys(CLASSES);
+    let cl=prompt('Choose class:\n'+clsNames.map((s,i)=>`${i+1}. ${s}`).join('\n'),'3');
+    cl=clsNames[Math.max(0,Math.min(clsNames.length-1,parseInt(cl)-1))];
+    const base=CLASSES[cl].base;
+    const p={ id:'player', name, species:sp, cls:cl, x:cvs.width/2, y:cvs.height/2, r:14, hpMax:base.hp, hp:base.hp, atk:base.atk, spd:base.spd, xp:0, level:1, rareFind:0.05, hunger:0, stamina:100, skills:CLASSES[cl].skills.map(s=>({...s,lvl:0})), learned:[], facing:{x:1,y:0} };
+    if(cl==='Bloodmage'&&CLASSES.Bloodmage.passive) CLASSES.Bloodmage.passive(p);
+    return p;
+  }
+
+  function spawnEnemy(kind){
+    const e={ id:'m'+Math.random().toString(36).slice(2), kind, x:Math.floor(Math.random()*(cvs.width-80))+40, y:Math.floor(Math.random()*(cvs.height-80))+40, r:12, hpMax:80, hp:80, atk:8, spd:1.8, loot:lootTable(kind) };
+    if(kind==='boss'){ e.r=24; e.hpMax=400; e.hp=400; e.atk=18; e.spd=1.6; }
+    State.entities.push(e);
+  }
+  function lootTable(kind){
+    const baseZ = (Math.floor(Math.random()*21)+5) * (kind==='boss'?10:1);
+    const rare = Math.random() < (0.05 + (State.player?.rareFind||0));
+    const coins = zincToBest(baseZ + (rare? (Math.floor(Math.random()*201)+100):0));
+    const items = rare ? [{name:'Arcane Relic', tier:'rare'}] : [];
+    return {coins, items};
+  }
+  function dropLoot(x,y,loot){
+    State.pickups.push({type:'coins', x,y, amt:loot.coins, r:8, ttl:600});
+    loot.items.forEach(it=> State.pickups.push({type:'item', x:x+(Math.random()*16-8), y:y+(Math.random()*16-8), it, r:8, ttl:600}));
+    log(`Loot dropped: ${fmtCoins(loot.coins)}${loot.items[0]?` + ${loot.items[0].name}`:''}`);
+  }
+
+  function genProcQuest(){
+    const T=[ ()=>({type:'Hunt',desc:`Cull ${Math.floor(Math.random()*5)+3} ${['Goblins','Shades','Wolves'][Math.floor(Math.random()*3)]} in ${State.zone.name}.`,target:Math.floor(Math.random()*5)+3,progress:0,reward:zincToBest(Math.floor(Math.random()*121)+60)}),
+              ()=>({type:'Gather',desc:`Gather ${Math.floor(Math.random()*4)+3} Mushrooms in ${State.zone.name}.`,target:Math.floor(Math.random()*4)+3,progress:0,reward:zincToBest(Math.floor(Math.random()*111)+50)}),
+              ()=>({type:'Explore',desc:`Scout a dungeon room.`,target:1,progress:0,reward:zincToBest(Math.floor(Math.random()*121)+100)}) ];
+    return T[Math.floor(Math.random()*T.length)]();
+  }
+  function setupMainStory(){
+    State.quests.main=[{id:'m1',name:'Whispers in Wildergrim',desc:'Investigate blood sigils on village doors.',done:false,reward:zincToBest(200)},
+                       {id:'m2',name:'Ashen Warden',desc:'Enter the Ash Crypts and defeat the unique boss.',done:false,reward:zincToBest(600)},
+                       {id:'m3',name:'Ebonreach Accord',desc:'Purchase a home in Ebonreach to gain noble trust.',done:false,reward:zincToBest(1000)}];
+    State.quests.side=[{id:'s1',name:'The Fading Spirit',desc:'Aid a Spirit to move on (bring an Arcane Relic).',done:false,reward:zincToBest(300)}];
+    State.quests.proc=[genProcQuest(), genProcQuest()];
+  }
+
+  const grantReward=(r)=>addCoins(r);
+  function addCoins(mix){
+    const z = coinsToZinc(State.inventory.coins) + coinsToZinc(mix);
+    State.inventory.coins = zincToBest(z);
+    coinsLabel.textContent = fmtCoins(State.inventory.coins);
+  }
+  function spendZinc(z){
+    const have=coinsToZinc(State.inventory.coins);
+    if(have<z) return false;
+    State.inventory.coins = zincToBest(have-z);
+    coinsLabel.textContent = fmtCoins(State.inventory.coins);
+    return true;
+  }
+
+  // Crafting
+  const RECIPES=[
+    {id:'potion',name:'Sanguine Tonic',needs:{'Mushroom':2,'Vial':1},makes:{name:'Sanguine Tonic',type:'consumable',hp:40}},
+    {id:'bomb',name:'Hex Bomb',needs:{'Sulfur':1,'Oil':1},makes:{name:'Hex Bomb',type:'throwable',dmg:60}},
+    {id:'bandage',name:'Field Bandage',needs:{'Cloth':2},makes:{name:'Bandage',type:'consumable',hp:20}}
+  ];
+  const countItem=(n)=> State.inventory.items.filter(i=>i.name===n).length;
+  function removeItems(cost){
+    for(const [name,qty] of Object.entries(cost)){
+      let need=qty;
+      for(let i=State.inventory.items.length-1;i>=0 && need>0;i--){
+        if(State.inventory.items[i].name===name){ State.inventory.items.splice(i,1); need--; }
+      }
+    }
+  }
+  function craftUI(){
+    const rows = RECIPES.map(r=>{
+      const haveAll = Object.entries(r.needs).every(([nm,qt])=> countItem(nm)>=qt);
+      const needsStr = Object.entries(r.needs).map(([nm,qt])=> nm+'×'+qt).join(', ');
+      return `<div class="row" style="justify-content:space-between;margin:.25rem 0"><div><b>${r.name}</b> — needs: ${needsStr}</div><button class="btn craftBtn" data-id="${r.id}" ${haveAll?'':'disabled'}>Craft</button></div>`;
+    }).join('');
+    paneCraft.innerHTML = `<fieldset><legend>Crafting</legend>${rows}<div style="opacity:.8;margin-top:6px">Tip: gather materials (Mushroom, Vial, Sulfur, Oil, Cloth) from loot.</div></fieldset>`;
+    document.querySelectorAll('.craftBtn').forEach(b=> b.onclick = ()=>craft(b.dataset.id));
+  }
+  function craft(id){
+    const r=RECIPES.find(x=>x.id===id); if(!r) return;
+    if(!Object.entries(r.needs).every(([nm,qt])=> countItem(nm)>=qt)){ alert('Missing materials'); return; }
+    removeItems(r.needs);
+    State.inventory.items.push(r.makes);
+    log('Crafted: '+r.makes.name);
+    renderUI();
+  }
+
+  function renderUI(){
+    const p=State.player;
+    const skills = p.skills.map(s=>`<div class="row" style="justify-content:space-between"><div>${s.name} <span class="pill">${s.key}</span></div><div>Lvl ${s.lvl}</div></div>`).join('');
+    paneChar.innerHTML = `<fieldset><legend>Character</legend><div><b>${p.name}</b> — ${p.species} • ${p.cls}</div><div class="bar" style="margin-top:6px"><i style="width:${(p.hp/p.hpMax)*100}%"></i></div><div class="row" style="margin-top:6px; gap:8px"><span class="pill">ATK ${p.atk.toFixed(1)}</span><span class="pill">SPD ${p.spd.toFixed(1)}</span><span class="pill">Rare+ ${(p.rareFind*100)|0}%</span></div><div class="sectionTitle">Skills</div>${skills}<button class="btn" id="btnLearnSkill">Spend Skill Point</button></fieldset>`;
+    function qList(arr){ return arr.map(q=>`<div style="margin:.3rem 0"><b>${q.name||q.type}</b><div style="opacity:.8">${q.desc}</div>${q.progress!=null?`<div class="bar" style="margin-top:4px"><i style="width:${(q.progress/q.target*100)}%"></i></div>`:''}</div>`).join(''); }
+    paneQuests.innerHTML = `<fieldset><legend>Quests</legend><div><b>Main</b>${qList(State.quests.main)}</div><div style="margin-top:6px"><b>Side</b>${qList(State.quests.side)}</div><div style="margin-top:6px"><b>Procedural</b>${qList(State.quests.proc)}</div><div class="row" style="margin-top:6px"><button class="btn" id="btnNewProc">New Proc Quest</button></div></fieldset>`;
+    const houses = State.villages.map(v=>{
+      const priceZ = priceToZinc(v.house);
+      const owned = State.housesOwned.includes(v.id);
+      return `<div class="row" style="justify-content:space-between; margin:.25rem 0"><div><b>${v.name}</b> • House ${owned?'<span class="pill">Owned</span>':fmtCoins(zincToBest(priceZ))} • Luxury ${v.house.luxury}</div><div class="row">${!owned?`<button class="btn buyHouse" data-id="${v.id}">Buy</button>`:''}${owned?`<button class="btn reno" data-id="${v.id}">Renovate</button> <button class="btn land" data-id="${v.id}">Buy Land (100g/acre)</button>`:''}</div></div>`;
+    }).join('');
+    paneHouses.innerHTML = `<fieldset><legend>Housing & Property</legend>${houses}</fieldset>`;
+    paneInv.innerHTML = `<fieldset><legend>Inventory</legend><div><b>Coins:</b> ${fmtCoins(State.inventory.coins)}</div><div style="margin-top:4px"><b>Items:</b> ${(State.inventory.items.map(i=>i.name).join(', ')||'—')}</div></fieldset>`;
+    paneVillage.innerHTML = `<fieldset><legend>World</legend><div class="row" style="flex-wrap:wrap; gap:6px">${WORLD.zones.map(z=>`<button class="btn goto" data-id="${z.id}">${z.name}</button>`).join('')}</div></fieldset>`;
+    craftUI();
+
+    document.getElementById('btnLearnSkill').onclick = ()=>{
+      const idx = prompt('Choose a skill to level (1..'+p.skills.length+')');
+      const i = Math.max(0,Math.min(p.skills.length-1,parseInt(idx)-1));
+      if(p.xp < 100){ alert('Earn 100 XP for a skill point.'); return; }
+      p.xp -= 100; p.skills[i].lvl++; p.atk += 1.5; log(`Learned ${p.skills[i].name} (Lvl ${p.skills[i].lvl}).`);
+      renderUI();
+    };
+    document.getElementById('btnNewProc').onclick = ()=>{ State.quests.proc.push(genProcQuest()); renderUI(); };
+    document.querySelectorAll('.buyHouse').forEach(b=> b.onclick = ()=>buyHouse(b.dataset.id));
+    document.querySelectorAll('.reno').forEach(b=> b.onclick = ()=>renovate(b.dataset.id));
+    document.querySelectorAll('.land').forEach(b=> b.onclick = ()=>buyLand(b.dataset.id));
+    document.querySelectorAll('.goto').forEach(b=> b.onclick = ()=>gotoZone(b.dataset.id));
+  }
+
+  function buyHouse(id){
+    const v = State.villages.find(v=>v.id===id);
+    const priceZ = priceToZinc(v.house);
+    if(!spendZinc(priceZ)){ alert('Not enough coins.'); return; }
+    State.housesOwned.push(v.id); log(`Purchased house in ${v.name}.`);
+    const m3 = State.quests.main.find(q=>q.id==='m3');
+    if(m3 && !m3.done && v.id==='v4'){ m3.done=true; grantReward(m3.reward); log('Main quest updated: Ebonreach Accord complete.'); }
+    renderUI();
+  }
+  function renovate(id){
+    const costZ = priceToZinc({G: Math.floor(Math.random()*16)+5});
+    if(!spendZinc(costZ)){ alert('Need '+fmtCoins(zincToBest(costZ))); return; }
+    log('Renovations complete. Luxury +1.');
+    const v = State.villages.find(v=>v.id===id);
+    v.house.luxury = Math.min(6,(v.house.luxury||1)+1);
+    renderUI();
+  }
+  function buyLand(id){
+    const acres = parseInt(prompt('Acres to purchase at 100g/acre?', '1'))||1;
+    const costZ = priceToZinc({G: 100*acres});
+    if(!spendZinc(costZ)){ alert('Need '+fmtCoins(zincToBest(costZ))); return; }
+    log(`Purchased ${acres} acres around your ${State.villages.find(v=>v.id===id).name} property.`);
+  }
+
+  function gotoZone(id){
+    const z = WORLD.zones.find(z=>z.id===id);
+    State.zone = z; locLabel.textContent = z.name;
+    State.entities = [];
+    for(let i=0;i< (z.dungeon?6:4);i++) spawnEnemy(z.dungeon && i===0? 'boss':'mob');
+    log('Traveled to '+z.name);
+  }
+
+  function save(){
+    const data = JSON.stringify(State, (k,v)=> (k==='entities'||k==='projectiles'||k==='pickups')? undefined : v);
+    localStorage.setItem('darkfall_save', data); log('Game saved.');
+  }
+  functio
