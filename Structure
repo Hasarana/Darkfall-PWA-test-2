@@ -1,0 +1,7 @@
+darkfall-pwa/
+ ├─ index.html
+ ├─ manifest.json
+ ├─ service-worker.js
+ └─ assets/
+     ├─ icon-192.svg
+     └─ icon-512.svg
