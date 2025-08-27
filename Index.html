@@ -1,42 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+ <meta charset="utf-8" />
+ <meta name="viewport" 
+content="width=device-width,initial-scale=1,maximum-sca
+le=1,user-scalable=no" />
   <title>Darkfall — RPG/Survival/Action (PWA)</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e12" />
   <style>
-    html, body { height: 100%; margin: 0; background:#0b0e12; color:#e6e6ea; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial; }
-    #ui { position: fixed; inset: 0 0 auto 0; display:flex; gap:.5rem; align-items:center; padding:.5rem .75rem; background:linear-gradient(180deg, rgba(11,14,18,.9), rgba(11,14,18,.55)); border-bottom:1px solid #1a1f29; z-index:5 }
-    #log { position: fixed; bottom: 0; left: 0; right: 0; max-height: 28vh; overflow:auto; font-size:.9rem; padding:.5rem .75rem; background:linear-gradient(0deg, rgba(11,14,18,.9), rgba(11,14,18,.55)); border-top:1px solid #1a1f29; }
-    #gameWrap { display: grid; grid-template-columns: 1fr 340px; gap: 8px; height: calc(100% - 84px); margin-top: 44px; }
-    #right { border-left: 1px solid #1a1f29; padding: 8px; overflow:auto; }
-    #canvas { width: 100%; height: 100%; background:#0f141b; display:block; touch-action: none; }
-    .btn { background:#1c2330; border:1px solid #2a3445; padding:.45rem .6rem; color:#eaeaf2; border-radius:10px; cursor:pointer; }
-    .btn:hover { background:#222b3a; }
-    .row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
-    select, input[type="number"], input[type="text"] { background:#0f141b; color:#dfe3ea; border:1px solid #2a3445; border-radius:8px; padding:.35rem .5rem; }
-    fieldset { border:1px solid #2a3445; border-radius:12px; margin:6px 0; }
-    legend { padding: 0 .4rem; color:#9bb1d6; }
-    .bar { height: 10px; border:1px solid #2a3445; border-radius: 999px; overflow:hidden; background:#10151d; }
-    .bar > i { display:block; height:100%; background:linear-gradient(90deg,#79ffa8,#42b983,#2bb4d6); }
-    .pill { border:1px solid #2a3445; border-radius:999px; padding:.1rem .5rem; font-size:.8rem; opacity:.9; }
-    .sectionTitle { font-weight:700; margin-top:8px; color:#a6b8dc; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono"; font-size:.85rem; background:#0b0e12; border:1px solid #2a3445; padding:.1rem .35rem; border-radius:6px; }
-    a { color:#9bd0ff }
-    #hud { position: fixed; inset: auto 0 52px 0; display:flex; justify-content:space-between; padding: 8px; pointer-events:none; z-index:6; }
-    .pad { pointer-events:auto; background:#0f141bcc; border:1px solid #2a3445; border-radius:16px; padding:8px; display:grid; grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(3, 54px); gap:6px; }
-    .pad button, .act button { width:54px; height:54px; border-radius:14px; background:#1c2330; border:1px solid #2a3445; color:#eaeaf2; font-weight:700; }
-    .act { pointer-events:auto; display:flex; gap:8px; align-items:flex-end; }
+   html, body { height: 100%; margin: 0;
+ background:#0b0e12; color:#e6e6ea; font-family:
+ system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+ Cantarell, Noto Sans, Arial; }
+   #ui { position: fixed; inset: 0 0 auto 0; display:flex;
+ gap:.5rem; align-items:center; padding:.5rem .75rem;
+ background:linear-gradient(180deg, rgba(11,14,18,.9),
+ rgba(11,14,18,.55)); border-bottom:1px solid #1a1f29;
+ z-index:5 }
+    #log { position: fixed; bottom: 0; left: 0; right: 0;
+ max-height: 28vh; overflow:auto; font-size:.9rem;
+ padding:.5rem .75rem; background:linear-gradient(0deg,
+ rgba(11,14,18,.9), rgba(11,14,18,.55)); border-top:1px solid
+ #1a1f29; }
+    #gameWrap { display: grid; grid-template-columns: 1fr
+ 340px; gap: 8px; height: calc(100% - 84px); margin-top:
+ 44px; }
+   #right { border-left: 1px solid #1a1f29; padding: 8px; 
+ overflow:auto; }
+   #canvas { width: 100%; height: 100%;
+ background:#0f141b; display:block; touch-action: none; }
+   .btn { background:#1c2330; border:1px solid #2a3445;
+ padding:.45rem .6rem; color:#eaeaf2; border-radius:10px;
+ cursor:pointer; }
+   .btn:hover { background:#222b3a; }
+   .row { display:flex; gap:.5rem; flex-wrap:wrap;
+ align-items:center; }
+    select, input[type="number"], input[type="text"]
+ { background:#0f141b; color:#dfe3ea; border:1px solid
+ #2a3445; border-radius:8px; padding:.35rem .5rem; }
+   fieldset { border:1px solid #2a3445; border-radius:12px;
+ margin:6px 0; }
+  legend { padding: 0 .4rem; color:#9bb1d6; }
+  .bar { height: 10px; border:1px solid #2a3445;
+ border-radius: 999px; overflow:hidden;
+ background:#10151d; }
+   .bar > i { display:block; height:100%;
+ background:linear-gradient(90deg,#79ffa8,#42b983,#2bb
+ 4d6); }
+   .pill { border:1px solid #2a3445; border-radius:999px;
+ padding:.1rem .5rem; font-size:.8rem; opacity:.9; }
+   .sectionTitle { font-weight:700; margin-top:8px; 
+ color:#a6b8dc; }
+   .kbd { font-family: ui-monospace, SFMono-Regular,
+ Menlo, Consolas, "Liberation Mono"; font-size:.85rem;
+ background:#0b0e12; border:1px solid #2a3445;
+ padding:.1rem .35rem; border-radius:6px; }
+   a { color:#9bd0ff }
+   #hud { position: fixed; inset: auto 0 52px 0; display:flex;
+ justify-content:space-between; padding: 8px;
+ pointer-events:none; z-index:6; }
+   .pad { pointer-events:auto; background:#0f141bcc;
+ border:1px solid #2a3445; border-radius:16px;
+ padding:8px; display:grid; grid-template-columns:
+ repeat(3, 54px); grid-template-rows: repeat(3, 54px);
+ gap:6px; }
+   .pad button, .act button { width:54px; height:54px; 
+ border-radius:14px; background:#1c2330; border:1px solid
+ #2a3445; color:#eaeaf2; font-weight:700; }
+   .act { pointer-events:auto; display:flex; gap:8px;
+ align-items:flex-end; }
     @media (max-width: 980px) {
-      #gameWrap { grid-template-columns: 1fr; }
-      #right { border-left:none; border-top:1px solid #1a1f29; height: 52vh; }
-      #hud { inset: auto 0 56px 0; }
+     #gameWrap { grid-template-columns: 1fr; }
+     #right { border-left:none; border-top:1px solid #1a1f29;
+ height: 52vh; }
+     #hud { inset: auto 0 56px 0; }
     }
   </style>
-</head>
-<body>
+ </head>
+ <body>
   <div id="ui" class="row">
     <button class="btn" id="newGameBtn">New Game</button>
     <button class="btn" id="saveBtn">Save</button>
