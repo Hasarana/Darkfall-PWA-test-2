@@ -76,11 +76,12 @@ le=1,user-scalable=no" />
  height: 52vh; }
      #hud { inset: auto 0 56px 0; }
     }
-  </style>
- </head>
- <body>
-  <div id="ui" class="row">
-    <button class="btn" id="newGameBtn">New Game</button>
+   </style>
+  </head>
+  <body>
+   <div id="ui" class="row">
+    <button class="btn" id="newGameBtn">New Game</
+  button>
     <button class="btn" id="saveBtn">Save</button>
     <button class="btn" id="loadBtn">Load</button>
     <span class="pill" id="timeLabel">Day 1 — Dawn</span>
@@ -89,73 +90,97 @@ le=1,user-scalable=no" />
     <span class="pill" id="xpLabel">Lvl 1 • 0/100 XP</span>
     <span class="pill" id="hpLabel">HP 100/100</span>
     <div style="margin-left:auto" class="row">
-      <span>Controls: <span class="kbd">WASD/Pad</span> move • <span class="kbd">Space/⚔</span> attack • <span class="kbd">Q/E/R</span> skills • <span class="kbd">Esc</span> pause</span>
+     <span>Controls: <span class="kbd">WASD/Pad</span>
+  move • <span class="kbd">Space/⚔</span> attack • <span
+  class="kbd">Q/E/R</span> skills • <span class="kbd">Esc<
+  /span> pause</span>
+     </div>
     </div>
-  </div>
-  <div id="gameWrap">
-    <canvas id="canvas" width="1024" height="640"></canvas>
-    <aside id="right">
+    <div id="gameWrap">
+     <canvas id="canvas" width="1024" height="640"></
+   canvas>
+     <aside id="right">
       <div id="paneChar"></div>
       <div id="paneQuests" style="margin-top:8px"></div>
       <div id="paneHouses" style="margin-top:8px"></div>
       <div id="paneInv" style="margin-top:8px"></div>
       <div id="paneCraft" style="margin-top:8px"></div>
       <div id="paneVillage" style="margin-top:8px"></div>
-    </aside>
-  </div>
-  <div id="hud">
-    <div class="pad">
-      <span></span><button id="up">↑</button><span></span>
-      <button id="left">←</button><button id="attack">⚔</button><button id="right">→</button>
-      <span></span><button id="down">↓</button><span></span>
+     </aside>
     </div>
-    <div class="act">
+    <div id="hud">
+     <div class="pad">
+      <span></span><button id="up">↑</button><span></
+   span>
+      <button id="left">←</button><button id="attack">⚔</
+  button><button id="right">→</button>
+      <span></span><button id="down">↓</
+  button><span></span>
+     </div>
+     <div class="act">
       <button id="qbtn">Q</button>
       <button id="ebtn">E</button>
       <button id="rbtn">R</button>
     </div>
-  </div>
-  <div id="log"></div>
+   </div>
+   <div id="log"></div>
 
   <script>
 /* Darkfall RPG — full prototype (mobile-ready PWA)
-   Systems: classes (incl. Bloodmage), skill trees, leveling, procedural quests,
-   dungeons & boss, 5-tier currency, villages/housing/land, crafting, saving/loading,
+   Systems: classes (incl. Bloodmage), skill trees, leveling,
+ procedural quests,
+   dungeons & boss, 5-tier currency, villages/housing/land,
+ crafting, saving/loading,
    mobile touch controls. */
 
-(function(){
-  const cvs = document.getElementById('canvas');
-  const ctx = cvs.getContext('2d', { alpha:false });
-  const logEl = document.getElementById('log');
-  const paneChar = document.getElementById('paneChar');
-  const paneQuests = document.getElementById('paneQuests');
-  const paneHouses = document.getElementById('paneHouses');
-  const paneInv = document.getElementById('paneInv');
-  const paneCraft = document.getElementById('paneCraft');
-  const paneVillage = document.getElementById('paneVillage');
-  const timeLabel = document.getElementById('timeLabel');
-  const xpLabel = document.getElementById('xpLabel');
-  const hpLabel = document.getElementById('hpLabel');
-  const coinsLabel = document.getElementById('coinsLabel');
-  const locLabel = document.getElementById('locLabel');
+ (function(){
+   const cvs = document.getElementById('canvas');
+   const ctx = cvs.getContext('2d', { alpha:false });
+   const logEl = document.getElementById('log');
+   const paneChar = document.getElementById('paneChar');
+   const paneQuests = 
+  document.getElementById('paneQuests');
+   const paneHouses =
+  document.getElementById('paneHouses');
+   const paneInv = document.getElementById('paneInv');
+   const paneCraft = 
+  document.getElementById('paneCraft');
+   const paneVillage = 
+  document.getElementById('paneVillage');
+   const timeLabel = 
+  document.getElementById('timeLabel');
+   const xpLabel = document.getElementById('xpLabel');
+   const hpLabel = document.getElementById('hpLabel');
+   const coinsLabel = 
+  document.getElementById('coinsLabel');
+   const locLabel = document.getElementById('locLabel');
 
-  const upBtn = document.getElementById('up');
-  const downBtn = document.getElementById('down');
-  const leftBtn = document.getElementById('left');
-  const rightBtn = document.getElementById('right');
-  const atkBtn = document.getElementById('attack');
-  const qBtn = document.getElementById('qbtn');
-  const eBtn = document.getElementById('ebtn');
-  const rBtn = document.getElementById('rbtn');
+   const upBtn = document.getElementById('up');
+   const downBtn = document.getElementById('down');
+   const leftBtn = document.getElementById('left');
+   const rightBtn = document.getElementById('right');
+   const atkBtn = document.getElementById('attack');
+   const qBtn = document.getElementById('qbtn');
+   const eBtn = document.getElementById('ebtn');
+   const rBtn = document.getElementById('rbtn');
 
-  const rand=(a,b)=>Math.random()*(b-a)+a;
-  const randi=(a,b)=>Math.floor(rand(a,b+1));
-  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+   const rand=(a,b)=>Math.random()*(b-a)+a;
+   const randi=(a,b)=>Math.floor(rand(a,b+1));
+   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 
-  const COIN = { Z:{name:'Zinc',sym:'z',rate:1}, C:{name:'Copper',sym:'c',rate:5}, S:{name:'Silver',sym:'s',rate:25}, G:{name:'Gold',sym:'g',rate:125}, P:{name:'Platinum',sym:'p',rate:625} };
-  const coinsToZinc = (c)=> (c.Z||0) + 5*(c.C||0) + 25*(c.S||0) + 125*(c.G||0) + 625*(c.P||0);
-  function zincToBest(z){ let P=Math.floor(z/625); z%=625; let G=Math.floor(z/125); z%=125; let S=Math.floor(z/25); z%=25; let C=Math.floor(z/5); z%=5; let Z=z; return {Z,C,S,G,P}; }
-  const fmtCoins = (c)=>['P','G','S','C','Z'].map(k=>c[k]?c[k]+COIN[k].sym:'').filter(Boolean).join(' ') || '0z';
+   const COIN = { Z:{name:'Zinc',sym:'z',rate:1}, C:
+  {name:'Copper',sym:'c',rate:5}, S:
+  {name:'Silver',sym:'s',rate:25}, G:
+  {name:'Gold',sym:'g',rate:125}, P:
+  {name:'Platinum',sym:'p',rate:625} };
+   const coinsToZinc = (c)=> (c.Z||0) + 5*(c.C||0) + 25*(c.S||
+  0) + 125*(c.G||0) + 625*(c.P||0);
+   function zincToBest(z){ let P=Math.floor(z/625); z%=625; 
+  let G=Math.floor(z/125); z%=125; let S=Math.floor(z/25);
+  z%=25; let C=Math.floor(z/5); z%=5; let Z=z; return
+  {Z,C,S,G,P}; }
+   const fmtCoins = (c)=>['P','G','S','C','Z'].map(k=>c[k]?c[k]
+  +COIN[k].sym:'').filter(Boolean).join(' ') || '0z';
 
   const SPECIES = ['Human','Demon','Spirit (NPC)','Half-Demon','Elf — Dark','Elf — Snow','Elf — Mountain','Elf — Forest','Vampire','Lycan','Lich','Shade','Fae (Gloom)'];
 
