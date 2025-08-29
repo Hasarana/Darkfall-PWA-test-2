@@ -217,15 +217,24 @@ Warden',hp:400,atk:18,uniq:'Summons bone cages'}]},
 Gloam',level:3,color:'#111b16'} ],
    villages:[ {id:'v1',name:'Thornwatch',house:
 {priceZ:500,luxury:1}},
-         {id:'v2',name:'Gravehollow',house:{priceC:60,luxury:2}},
-               {id:'v3',name:'Moonfen',house:{priceS:40,luxury:3}},
-               {id:'v4',name:'Ebonreach',house:{priceG:200,luxury:4}},
-               {id:'v5',name:'Kingsfall',house:{priceG:2000,luxury:5}} ]
-  };
+         {id:'v2',name:'Gravehollow',house:
+{priceC:60,luxury:2}},
+         {id:'v3',name:'Moonfen',house:
+{priceS:40,luxury:3}},
+         {id:'v4',name:'Ebonreach',house:
+{priceG:200,luxury:4}},
+         {id:'v5',name:'Kingsfall',house:
+{priceG:2000,luxury:5}} ]
+ };
 
-  const priceToZinc = (p)=> coinsToZinc({Z:0,C:0,S:0,G:0,P:0,...p});
+ const priceToZinc = (p)=> 
+coinsToZinc({Z:0,C:0,S:0,G:0,P:0,...p});
 
-  const State = { paused:false, time:{day:1,tick:0}, zone:WORLD.zones[0], entities:[], pickups:[], projectiles:[], villages:JSON.parse(JSON.stringify(WORLD.villages)), player:null, quests:{main:[],side:[],proc:[]}, inventory:{coins:{Z:0,C:0,S:0,G:0,P:0}, items:[]}, housesOwned:[] };
+ const State = { paused:false, time:{day:1,tick:0}, 
+zone:WORLD.zones[0], entities:[], pickups:[], projectiles:[],
+villages:JSON.parse(JSON.stringify(WORLD.villages)), 
+player:null, quests:{main:[],side:[],proc:[]}, inventory:{coins:
+{Z:0,C:0,S:0,G:0,P:0}, items:[]}, housesOwned:[] };
 
   const log=(m)=>{ const p=document.createElement('div'); p.textContent='» '+m; logEl.prepend(p); };
 
