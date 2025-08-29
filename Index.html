@@ -175,20 +175,35 @@ le=1,user-scalable=no" />
   {name:'Platinum',sym:'p',rate:625} };
    const coinsToZinc = (c)=> (c.Z||0) + 5*(c.C||0) + 25*(c.S||
   0) + 125*(c.G||0) + 625*(c.P||0);
-   function zincToBest(z){ let P=Math.floor(z/625); z%=625; 
+   function zincToBest(z){ let P=Math.floor(z/625); z%=625;
   let G=Math.floor(z/125); z%=125; let S=Math.floor(z/25);
   z%=25; let C=Math.floor(z/5); z%=5; let Z=z; return
   {Z,C,S,G,P}; }
    const fmtCoins = (c)=>['P','G','S','C','Z'].map(k=>c[k]?c[k]
   +COIN[k].sym:'').filter(Boolean).join(' ') || '0z';
 
-  const SPECIES = ['Human','Demon','Spirit (NPC)','Half-Demon','Elf — Dark','Elf — Snow','Elf — Mountain','Elf — Forest','Vampire','Lycan','Lich','Shade','Fae (Gloom)'];
+   const SPECIES = ['Human','Demon','Spirit
+  (NPC)','Half-Demon','Elf — Dark','Elf — Snow','Elf —
+  Mountain','Elf — Forest','Vampire','Lycan','Lich','Shade','Fae
+  (Gloom)'];
 
-  const CLASSES = {
-    Warrior:{ base:{hp:130, atk:12, spd:2.4}, skills:[{id:'whirl',name:'Whirlwind',key:'Q',desc:'Spin attack.'},{id:'guard',name:'Guard',key:'E',desc:'Damage resist.'},{id:'leap',name:'Leap',key:'R',desc:'Jump slam.'}]},
-    Ranger:{ base:{hp:100, atk:10, spd:2.8}, skills:[{id:'roll',name:'Dodge Roll',key:'Q',desc:'Evade.'},{id:'mark',name:"Hunter's Mark",key:'E',desc:'Crit up.'},{id:'volley',name:'Arrow Volley',key:'R',desc:'AOE arrows.'}]},
-    Bloodmage:{ base:{hp:110, atk:10, spd:2.5}, skills:[{id:'hemovoid',name:'Hemovoid',key:'Q',desc:'Drain life in 30ft radius.'},{id:'bloodsurge',name:'Blood Surge',key:'E',desc:'ATK & rare drop up.'},{id:'sanguineWall',name:'Sanguine Wall',key:'R',desc:'Shield consuming HP.'}], passive:(p)=>{ p.atk*=1.15; p.rareFind+=0.15; }}
-  };
+   const CLASSES = {
+    Warrior:{ base:{hp:130, atk:12, spd:2.4}, skills:
+[{id:'whirl',name:'Whirlwind',key:'Q',desc:'Spin attack.'},
+{id:'guard',name:'Guard',key:'E',desc:'Damage resist.'},
+{id:'leap',name:'Leap',key:'R',desc:'Jump slam.'}]},
+   Ranger:{ base:{hp:100, atk:10, spd:2.8}, skills:
+[{id:'roll',name:'Dodge Roll',key:'Q',desc:'Evade.'},
+{id:'mark',name:"Hunter's Mark",key:'E',desc:'Crit up.'},
+{id:'volley',name:'Arrow Volley',key:'R',desc:'AOE arrows.'}]},
+   Bloodmage:{ base:{hp:110, atk:10, spd:2.5}, skills:
+[{id:'hemovoid',name:'Hemovoid',key:'Q',desc:'Drain life in 
+30ft radius.'},{id:'bloodsurge',name:'Blood
+Surge',key:'E',desc:'ATK & rare drop up.'},
+{id:'sanguineWall',name:'Sanguine Wall',key:'R',desc:'Shield
+consuming HP.'}], passive:(p)=>{ p.atk*=1.15;
+p.rareFind+=0.15; }}
+ };
 
   const WORLD = {
     zones:[ {id:'wilds',name:'Wildergrim',level:1,color:'#0e1823'},
