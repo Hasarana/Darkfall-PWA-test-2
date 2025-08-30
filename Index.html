@@ -236,17 +236,26 @@ villages:JSON.parse(JSON.stringify(WORLD.villages)),
 player:null, quests:{main:[],side:[],proc:[]}, inventory:{coins:
 {Z:0,C:0,S:0,G:0,P:0}, items:[]}, housesOwned:[] };
 
-  const log=(m)=>{ const p=document.createElement('div'); p.textContent='» '+m; logEl.prepend(p); };
+  const log=(m)=>{ const p=document.createElement('div');
+p.textContent='» '+m; logEl.prepend(p); };
 
-  function newPlayer(){
-    let name=prompt('Name your character:','Ardent'); if(!name) name='Ardent';
-    let sp=prompt('Choose species:\n'+SPECIES.map((s,i)=>`${i+1}. ${s}`).join('\n'),'1');
-    sp=SPECIES[Math.max(0,Math.min(SPECIES.length-1,parseInt(sp)-1))];
+ function newPlayer(){
+  let name=prompt('Name your character:','Ardent'); if(!
+ name) name='Ardent';
+    let sp=prompt('Choose species:
+ \n'+SPECIES.map((s,i)=>`${i+1}. ${s}`).join('\n'),'1');
+     
+ sp=SPECIES[Math.max(0,Math.min(SPECIES.length-1,parseI
+ nt(sp)-1))];
     const clsNames=Object.keys(CLASSES);
-    let cl=prompt('Choose class:\n'+clsNames.map((s,i)=>`${i+1}. ${s}`).join('\n'),'3');
-    cl=clsNames[Math.max(0,Math.min(clsNames.length-1,parseInt(cl)-1))];
-    const base=CLASSES[cl].base;
-    const p={ id:'player', name, species:sp, cls:cl, x:cvs.width/2, y:cvs.height/2, r:14, hpMax:base.hp, hp:base.hp, atk:base.atk, spd:base.spd, xp:0, level:1, rareFind:0.05, hunger:0, stamina:100, skills:CLASSES[cl].skills.map(s=>({...s,lvl:0})), learned:[], facing:{x:1,y:0} };
+    let cl=prompt('Choose class:\n'+clsNames.map((s,i)=>$
+ {i+1}. ${s}`).join('\n'),'3');
+    
+  cl=clsNames[Math.max(0,Math.min(clsNames.length-1,pars
+  eInt(cl)-1))];
+     const base=CLASSES[cl].base;
+     const p={ id:'player', name, species:sp, cls:cl, 
+     x:cvs.width/2, y:cvs.height/2, r:14, hpMax:base.hp, hp:base.hp, atk:base.atk, spd:base.spd, xp:0, level:1, rareFind:0.05, hunger:0, stamina:100, skills:CLASSES[cl].skills.map(s=>({...s,lvl:0})), learned:[], facing:{x:1,y:0} };
     if(cl==='Bloodmage'&&CLASSES.Bloodmage.passive) CLASSES.Bloodmage.passive(p);
     return p;
   }
