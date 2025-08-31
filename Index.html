@@ -251,38 +251,66 @@ p.textContent='» '+m; logEl.prepend(p); };
     let cl=prompt('Choose class:\n'+clsNames.map((s,i)=>$
  {i+1}. ${s}`).join('\n'),'3');
     
-  cl=clsNames[Math.max(0,Math.min(clsNames.length-1,pars
-  eInt(cl)-1))];
-     const base=CLASSES[cl].base;
-     const p={ id:'player', name, species:sp, cls:cl, 
-     x:cvs.width/2, y:cvs.height/2, r:14, hpMax:base.hp, hp:base.hp, atk:base.atk, spd:base.spd, xp:0, level:1, rareFind:0.05, hunger:0, stamina:100, skills:CLASSES[cl].skills.map(s=>({...s,lvl:0})), learned:[], facing:{x:1,y:0} };
-    if(cl==='Bloodmage'&&CLASSES.Bloodmage.passive) CLASSES.Bloodmage.passive(p);
-    return p;
+ cl=clsNames[Math.max(0,Math.min(clsNames.length-1,pars
+ eInt(cl)-1))];
+    const base=CLASSES[cl].base;
+    const p={ id:'player', name, species:sp, cls:cl, 
+ x:cvs.width/2, y:cvs.height/2, r:14, hpMax:base.hp, 
+ hp:base.hp, atk:base.atk, spd:base.spd, xp:0, level:1, 
+ rareFind:0.05, hunger:0, stamina:100, 
+ skills:CLASSES[cl].skills.map(s=>({...s,lvl:0})), learned:[],
+ facing:{x:1,y:0} };
+   if(cl==='Bloodmage'&&CLASSES.Bloodmage.passive) 
+ CLASSES.Bloodmage.passive(p);
+   return p;
   }
 
   function spawnEnemy(kind){
-    const e={ id:'m'+Math.random().toString(36).slice(2), kind, x:Math.floor(Math.random()*(cvs.width-80))+40, y:Math.floor(Math.random()*(cvs.height-80))+40, r:12, hpMax:80, hp:80, atk:8, spd:1.8, loot:lootTable(kind) };
-    if(kind==='boss'){ e.r=24; e.hpMax=400; e.hp=400; e.atk=18; e.spd=1.6; }
+    const e={ id:'m'+Math.random().toString(36).slice(2), 
+  kind, x:Math.floor(Math.random()*(cvs.width-80))+40, 
+  y:Math.floor(Math.random()*(cvs.height-80))+40, r:12, 
+  hpMax:80, hp:80, atk:8, spd:1.8, loot:lootTable(kind) };
+    if(kind==='boss'){ e.r=24; e.hpMax=400; e.hp=400; 
+  e.atk=18; e.spd=1.6; }
     State.entities.push(e);
   }
   function lootTable(kind){
-    const baseZ = (Math.floor(Math.random()*21)+5) * (kind==='boss'?10:1);
-    const rare = Math.random() < (0.05 + (State.player?.rareFind||0));
-    const coins = zincToBest(baseZ + (rare? (Math.floor(Math.random()*201)+100):0));
-    const items = rare ? [{name:'Arcane Relic', tier:'rare'}] : [];
-    return {coins, items};
+    const baseZ = (Math.floor(Math.random()*21)+5) * 
+ (kind==='boss'?10:1);
+    const rare = Math.random() < (0.05 + 
+ (State.player?.rareFind||0));
+    const coins = zincToBest(baseZ + (rare? 
+ (Math.floor(Math.random()*201)+100):0));
+   const items = rare ? [{name:'Arcane Relic', tier:'rare'}] : [];
+   return {coins, items};
   }
   function dropLoot(x,y,loot){
-    State.pickups.push({type:'coins', x,y, amt:loot.coins, r:8, ttl:600});
-    loot.items.forEach(it=> State.pickups.push({type:'item', x:x+(Math.random()*16-8), y:y+(Math.random()*16-8), it, r:8, ttl:600}));
-    log(`Loot dropped: ${fmtCoins(loot.coins)}${loot.items[0]?` + ${loot.items[0].name}`:''}`);
+    State.pickups.push({type:'coins', x,y, amt:loot.coins, r:8, 
+ttl:600});
+    loot.items.forEach(it=> State.pickups.push({type:'item', 
+x:x+(Math.random()*16-8), y:y+(Math.random()*16-8), it, 
+r:8, ttl:600}));
+    log(`Loot dropped: ${fmtCoins(loot.coins)}${loot.items[0]?` + $
+ {loot.items[0].name}`:''}`);
   }
 
   function genProcQuest(){
-    const T=[ ()=>({type:'Hunt',desc:`Cull ${Math.floor(Math.random()*5)+3} ${['Goblins','Shades','Wolves'][Math.floor(Math.random()*3)]} in ${State.zone.name}.`,target:Math.floor(Math.random()*5)+3,progress:0,reward:zincToBest(Math.floor(Math.random()*121)+60)}),
-              ()=>({type:'Gather',desc:`Gather ${Math.floor(Math.random()*4)+3} Mushrooms in ${State.zone.name}.`,target:Math.floor(Math.random()*4)+3,progress:0,reward:zincToBest(Math.floor(Math.random()*111)+50)}),
-              ()=>({type:'Explore',desc:`Scout a dungeon room.`,target:1,progress:0,reward:zincToBest(Math.floor(Math.random()*121)+100)}) ];
-    return T[Math.floor(Math.random()*T.length)]();
+    const T=[ ()=>({type:'Hunt',desc:`Cull $
+  {Math.floor(Math.random()*5)+3} $
+  {['Goblins','Shades','Wolves'][Math.floor(Math.random()*3)]} 
+  in $
+  {State.zone.name}.`,target:Math.floor(Math.random()*5)+3,p
+  rogress:0,reward:zincToBest(Math.floor(Math.random()*121)
+  +60)}),
+           ()=>({type:'Gather',desc:`Gather $
+  {Math.floor(Math.random()*4)+3} Mushrooms in $
+  {State.zone.name}.`,target:Math.floor(Math.random()*4)+3,p
+  rogress:0,reward:zincToBest(Math.floor(Math.random()*111)
+  +50)}),
+           ()=>({type:'Explore',desc:`Scout a dungeon 
+   room.`,target:1,progress:0,reward:zincToBest(Math.floor(Mat
+   h.random()*121)+100)}) ];
+      return T[Math.floor(Math.random()*T.length)]();
   }
   function setupMainStory(){
     State.quests.main=[{id:'m1',name:'Whispers in Wildergrim',desc:'Investigate blood sigils on village doors.',done:false,reward:zincToBest(200)},
